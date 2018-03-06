@@ -1,7 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const BundlerAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-const nodeExternals = require('webpack-node-externals');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const webpack = require('webpack');
 
 const WHITE_LISTED_NODE_MODULES = ['material-ui/RaisedButton', 'react', 'react-dom'];
@@ -10,23 +10,19 @@ module.exports = {
   entry: './src/index.tsx',
   output: {
     path: __dirname + '/dist',
-    filename: '[name].bundle.js',
-    chunkFilename: '[name].bundle.js'
+    filename: '[chunkhash].app.js',
+    chunkFilename: '[chunkhash].vendor.js'
   },
 
-  target: 'node',
-
-  externals: [nodeExternals({
-    'whitelist': WHITE_LISTED_NODE_MODULES
-  })],
+  target: 'web',
 
   // Enable sourcemaps for debugging webpack's output.
   devtool: 'source-map',
 
   devServer: {
     contentBase: path.join(__dirname, '/'),
-    compress: true,
-    port: 9000
+    port: 9000,
+    open: true
   },
 
   mode: 'development',
@@ -41,7 +37,7 @@ module.exports = {
       // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
       {
         test: /\.tsx?$/,
-        loader: 'awesome-typescript-loader'
+        loader: 'ts-loader'
       },
 
       // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
@@ -57,20 +53,26 @@ module.exports = {
     splitChunks: {
       cacheGroups: {
         vendor: {
-          test: function(...args) {
-            const regexp = new RegExp(`node_modules/(${WHITE_LISTED_NODE_MODULES.toString().replace(/,/g, '|')})`, 'g');
-            console.log(regexp, file);
-            return regexp.test(file);
-          },
+          test: /node_modules/,
           name: 'vendor',
-          chunks: 'all',
+          chunks: 'initial',
           enforce: true
         }
       }
-    }
+    },
+    minimize: true
   },
 
   plugins: [
-    new BundlerAnalyzerPlugin()
+    new CleanWebpackPlugin(['dist/*.app.*'], {
+      beforeEmit: true,
+      verbose: true
+    }),
+    new HtmlWebpackPlugin({
+      title: 'An App',
+      // Load a custom template (lodash by default see the FAQ for details)
+      template: './index.html'
+    }),
+    new webpack.optimize.AggressiveMergingPlugin(), // can be used to split up files if/when using http2
   ]
 };
