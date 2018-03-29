@@ -14,7 +14,7 @@ const selectedSubreddit = (state = 'reactjs', action: any) => {
 
 const posts = (state = {
   isFetching: false,
-  didInvalidate: false,
+  didInvalidate: true,
   items: <Array<any>>[]
 }, action: any) => {
   switch (action.type) {
@@ -33,7 +33,7 @@ const posts = (state = {
       return {
         ...state,
         isFetching: false,
-        didInvalidate: false,
+        didInvalidate: true,
         items: action.posts,
         lastUpdated: action.receivedAt
       }

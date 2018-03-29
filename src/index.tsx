@@ -1,23 +1,38 @@
+// React
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
+
+// Redux
 import { Provider } from 'react-redux';
-import { createStore } from 'redux';
+import { createStore, applyMiddleware } from 'redux';
+import thunk from 'redux-thunk';
+import { createLogger } from 'redux-logger';
 
-import { Form } from './components/Form';
+// MuiTheme
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import darkBaseTheme from 'material-ui/styles/baseThemes/darkBaseTheme';
+import { getMuiTheme } from 'material-ui/styles';
+
+// App-specific JS
+import App from './containers/App';
 import * as Actions from './actions';
-import Reducers from './reducers';
+import reducer from './reducers';
 
+// App-specific CSS
 
-let store = createStore(Reducers);
+const middleware = [thunk, createLogger()];
 
-const App = () => (
-  <MuiThemeProvider>
-    <Form compiler="TypeScript" framework="React" name="Andrew" />
+let store = createStore(reducer, applyMiddleware(...middleware));
+
+const MuiApp = () => (
+  <MuiThemeProvider muiTheme={getMuiTheme(darkBaseTheme)}>
+    <App />
   </MuiThemeProvider>
 );
 
 ReactDOM.render(
-  <App />,
+  <Provider store={store}>
+    <MuiApp />
+  </Provider>,
   document.getElementById('example')
 );
